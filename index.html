@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Color Match Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <script src="https://unpkg.com/sounds-some-sounds@3.0.0/build/index.js"></script>
+  <script src="https://unpkg.com/gif-capture-canvas@1.1.0/build/index.js"></script>
+  <script src="https://unpkg.com/pixi.js@5.3.0/dist/pixi.min.js"></script>
+  <script src="https://unpkg.com/pixi-filters@3.1.1/dist/pixi-filters.js"></script>
+  <script src="https://unpkg.com/crisp-game-lib@1.1.1/docs/bundle.js"></script>
+</head>
+<body style="background: #ddd;">
+
+<script>
+title = "Color Match";
+
+description = `
+[Tap] Blue Circle
+Black loses points
+1 Minute to score!
+`;
+
+characters = [];
+
+const G = {
+	WIDTH: 150,
+	HEIGHT: 200,
+};
+
+options = {
+  viewSize: {x: G.WIDTH, y: G.HEIGHT},
+  theme: 'pixel',
+  isPlayingBgm: true,
+  isReplayEnabled: true,
+  seed: 2,
+};
+
+let currentCircle = {
+  color: "blue",
+  x: 50,
+  y: 50,
+  radius: 15
+};
+let decisionTime = 30; // half a second in frams until new circle
+let gameTimer = 3600; // One minute timer in frames
+
+function update() {
+  if (!ticks) {
+    // Game initialization
+    currentCircle.color = "blue";
+    currentCircle.x = rnd(30, 130);
+    currentCircle.y = rnd(30, 180);
+    gameTimer = 3600;
+  }
+
+  // Draw circle
+  color(currentCircle.color);
+  arc(currentCircle.x, currentCircle.y, currentCircle.radius);
+
+  // Draw game timer
+  color("light_black");
+  rect(0, 195, (gameTimer / 3600) * G.WIDTH, 5);
+
+  // Update game timer
+  gameTimer--;
+  if (gameTimer <= 0) {
+    // If game timer runs out, the game ends
+    play("lucky");
+    end();
+  }
+
+  // Change the position and color of the circle at half a second
+  if (ticks % decisionTime === 0) {
+    currentCircle.x = rnd(30, 130);
+    currentCircle.y = rnd(30, 180);
+    currentCircle.color = rnd() < 0.5 ? "blue" : "black";
+  }
+
+  // Check player input
+  if (input.isJustPressed) {
+    // Player response
+    if (currentCircle.color === "blue") {
+      // If the circle is blue, add score
+      play("coin");
+      addScore(10);
+    } else {
+      play("hit");
+      addScore(-10);
+    }
+    // Set the circle off screen to await next decisionTime interval
+    currentCircle.x = -100;
+    currentCircle.y = -100;
+  }
+}
+
+addEventListener("load", onLoad);
+</script>
+
+</body>
+</html>
